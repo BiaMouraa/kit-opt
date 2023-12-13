@@ -356,7 +356,7 @@ void LocalSearch(Solution *s, Data& matrizAdj){
     s->sequence.push_back(1);
 }
 
-void Pertubation(Solution* s){
+void Perturbation(Solution* s){
 
     s->sequence.erase(s->sequence.begin());
     s->sequence.erase(s->sequence.end() - 1);
@@ -368,11 +368,12 @@ void Pertubation(Solution* s){
     int seg1First, seg2First = -1, insertSeg1, insertSeg2;
     vector <int> seg1 = {}, seg2 = {};
 
+    //random definition of the segment sizes
     int tSeg1 = rand() % tMax + 2;
     int tSeg2 = rand() % tMax + 2;
 
 
-    seg1First = rand() % (tMax - 1 - tSeg1);
+    seg1First = rand() % (n - 1 - tSeg1);
 
      for(int i = 0; i < tSeg1; i++){
         seg1.push_back(s->sequence[seg1First + i]); //set segment1
@@ -382,6 +383,7 @@ void Pertubation(Solution* s){
     while(seg2First == -1){
         seg2First = rand() % (n - 1 - tSeg2); //random initial element
         
+        //check if seg1 and seg2 are overlapping
         for(int i = 0; i < seg1.size(); i++){ 
             for(int j = 0; j < tSeg2; j++){
                 if(s->sequence[seg2First + j] == seg1[i]){
@@ -394,33 +396,34 @@ void Pertubation(Solution* s){
      }
 
     for(int i = 0; i < tSeg2; i++){
-        seg2.push_back(s->sequence[seg2First + i]); //set segment2
+        seg2.push_back(s->sequence[seg2First + i]); //set segment2  
     }
 
-    //switch segSet2 elements
+
+    //switch seg2 elements
     for(int i = 0; i < seg2.size(); i++){
         if(seg2First < seg1First){ //seg2 before seg1
-            vector<int>::iterator index = find(s->sequence.begin(), s->sequence.begin(), seg2[i]);
+            vector<int>::iterator index = find(s->sequence.begin(), s->sequence.end(), seg2[i]);
             s->sequence.erase(index);
-            s->sequence.insert(s->sequence.begin()+seg1First, seg2[i]);
-        } else{
-            vector<int>::iterator index = find(s->sequence.begin(), s->sequence.begin(), seg2[tSeg2 - 1 - i]);
+            s->sequence.insert(s->sequence.begin()+seg1First-1, seg2[i]);
+        }else{ //seg2 after seg1
+            vector<int>::iterator index = find(s->sequence.begin(), s->sequence.end(), seg2[tSeg2 - 1 - i]);
             s->sequence.erase(index);
             s->sequence.insert(s->sequence.begin()+seg1First, seg2[tSeg2 - 1 - i]);
         }
     }
+    
 
-    //switch segSet1 elements
+    //switch seg1 elements
     for(int i = 0; i < seg1.size(); i++){
         if(seg2First < seg1First){ //seg2 before seg1
-            vector<int>::iterator index = find(s->sequence.begin(), s->sequence.begin(), seg1[tSeg1 - 1 - i]);
+            vector<int>::iterator index = find(s->sequence.begin(), s->sequence.end(), seg1[tSeg1 - 1 - i]);
             s->sequence.erase(index);
             s->sequence.insert(s->sequence.begin()+seg2First, seg1[tSeg1 - 1 - i]);
-
         } else{
-            vector<int>::iterator index = find(s->sequence.begin(), s->sequence.begin(), seg1[i]);
+            vector<int>::iterator index = find(s->sequence.begin(), s->sequence.end(), seg1[i]);
             s->sequence.erase(index);
-            s->sequence.insert(s->sequence.begin()+seg2First, seg1[i]);
+            s->sequence.insert(s->sequence.begin()+seg2First+1, seg1[i]);
         }
     }
 
@@ -434,37 +437,31 @@ Solution ILS(int maxIter, int maxIterILS, Data& matrizAdj){
     bestOfAll.cost = INFINITY;
 
     //creating CL
-    size_t n = matrizAdj.getDimension();
-    vector<int> CL;
-    for(size_t i = 2; i <= n; i++) {
-        CL.push_back(i);
-        }
+    // size_t n = matrizAdj.getDimension();
+    // vector<int> CL;
+    // for(size_t i = 2; i <= n; i++) {
+    //     CL.push_back(i);
+    //     }
 
     for(int i = 0; i < maxIter; i++){
         Solution s = Construction(matrizAdj);
         Solution best = s;
 
         int iterILS = 0;
-        //cout << " 1 ";
         while(iterILS <= maxIterILS){
             LocalSearch(&s, matrizAdj);
             calculateSolutionCost(&s, matrizAdj);
-            //cout << " 2 ";
             if(s.cost < best.cost){
-                //cout << " a ";
                 best = s;
                 iterILS = 0;
-                //cout << s.cost;
             }
-            //cout << " 3 ";
-            Pertubation(&best);
+            Perturbation(&best);
             iterILS++;
         }
         if(best.cost < bestOfAll.cost){
             bestOfAll = best;
         }
     }
-
     return bestOfAll;
 
 }
@@ -478,7 +475,7 @@ int main(int argc, char** argv) {
     size_t n = data.getDimension();
 
     int maxIter, maxIterILS;
-    //Solution best;
+    Solution best;
     maxIter = 50;
     double sumCost = 0, sumTime = 0;
 
@@ -488,12 +485,22 @@ int main(int argc, char** argv) {
             maxIterILS = n;
         }
 
+        Solution s = Construction(data);
+
+        // showSolution(&s);
+        // calculateSolutionCost(&s, data);
+        // cout << s.cost << endl;
+
+        // Perturbation(&s);
+
+        // showSolution(&s);
+        // calculateSolutionCost(&s, data);
+        // cout << s.cost << endl;
+
     for(int i = 0; i < 10; i++){
         auto begin = chrono::high_resolution_clock::now();
 
-        //cout << "entra" << endl;
         Solution best = ILS(maxIter, maxIterILS, data);
-        //cout << "sai" <<endl;
 
         auto end = chrono::high_resolution_clock::now();
         auto time = chrono::duration_cast<chrono::milliseconds>(end - begin);
