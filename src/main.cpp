@@ -110,11 +110,14 @@ Solution Construction(Data& matrizAdj){
 }
 
 bool bestImprovementSwap(Solution *s, Data& matrizAdj){
+
+
     double bestDelta = 0;
     int best_i, best_j;
     int n = s->sequence.size() - 1;
 
-    for(int i = 1; i < n; i++){
+
+    for(int i = 2; i < n; i++){
 
         int ni = s->sequence[i];
         int ni_prev = s->sequence[i-1];
@@ -128,7 +131,7 @@ bool bestImprovementSwap(Solution *s, Data& matrizAdj){
             double delta;
 
             if(j == i + 1)
-                delta = - matrizAdj.getDistance(ni_prev, ni) - matrizAdj.getDistance(nj, nj_next) + matrizAdj.getDistance(ni_next, nj) + matrizAdj.getDistance(ni, nj_next);
+                delta = -matrizAdj.getDistance(ni_prev, ni) - matrizAdj.getDistance(nj, nj_next) + matrizAdj.getDistance(ni_prev, nj) + matrizAdj.getDistance(ni, nj_next);
             else
                 delta = -matrizAdj.getDistance(ni_prev, ni) - matrizAdj.getDistance(ni, ni_next) - matrizAdj.getDistance(nj_prev, nj) - matrizAdj.getDistance(nj, nj_next) + matrizAdj.getDistance(ni_prev, nj) + matrizAdj.getDistance(nj, ni_next) + matrizAdj.getDistance(nj_prev, ni) + matrizAdj.getDistance(ni, nj_next);
 
@@ -143,9 +146,10 @@ bool bestImprovementSwap(Solution *s, Data& matrizAdj){
     if(bestDelta < 0){
         swap(s->sequence[best_i], s->sequence[best_j]);
         s->cost += bestDelta;
+
         return true;
     }
-    
+
     return false;
 }
 
@@ -485,17 +489,18 @@ int main(int argc, char** argv) {
             maxIterILS = n;
         }
 
-        Solution s = Construction(data);
+        // Solution s = Construction(data);
 
         // showSolution(&s);
         // calculateSolutionCost(&s, data);
         // cout << s.cost << endl;
 
-        // Perturbation(&s);
+        // if(bestImprovementSwap(&s, data)){
+        //     showSolution(&s);
+        //     calculateSolutionCost(&s, data);
+        //     cout << s.cost << endl;
+        // }
 
-        // showSolution(&s);
-        // calculateSolutionCost(&s, data);
-        // cout << s.cost << endl;
 
     for(int i = 0; i < 10; i++){
         auto begin = chrono::high_resolution_clock::now();
