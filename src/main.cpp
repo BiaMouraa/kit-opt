@@ -143,6 +143,7 @@ bool bestImprovementSwap(Solution *s, Data& matrizAdj){
         }
     }
 
+
     if(bestDelta < 0){
         swap(s->sequence[best_i], s->sequence[best_j]);
         s->cost += bestDelta;
@@ -182,7 +183,7 @@ bool bestImprovementeOrOpt(Solution *s, int type, Data& matrizAdj){
                     }
                 }
             }
-
+    
             if(bestDelta < 0){
                 int reinsert = s->sequence[best_i];
                 s->sequence.erase(s->sequence.begin() + best_i);
@@ -216,15 +217,14 @@ bool bestImprovementeOrOpt(Solution *s, int type, Data& matrizAdj){
                     }
                 }
             }
-
             if(bestDelta < 0){
                 int reinsert1 = s->sequence[best_i];
                 int reinsert2 = s->sequence[best_i + 1];
 
                 s->sequence.erase(s->sequence.begin() + best_i);
                 s->sequence.erase(s->sequence.begin() + best_i);
-                s->sequence.insert(s->sequence.begin() + best_j - 1, reinsert1);
                 s->sequence.insert(s->sequence.begin() + best_j - 1, reinsert2);
+                s->sequence.insert(s->sequence.begin() + best_j - 1, reinsert1);
 
                 s->cost += bestDelta;
                 return true;
@@ -256,7 +256,7 @@ bool bestImprovementeOrOpt(Solution *s, int type, Data& matrizAdj){
                     }
                 }
             }
-
+            
             if(bestDelta < 0){
                 int reinsert1 = s->sequence[best_i];
                 int reinsert2 = s->sequence[best_i + 1];
@@ -265,9 +265,9 @@ bool bestImprovementeOrOpt(Solution *s, int type, Data& matrizAdj){
                 s->sequence.erase(s->sequence.begin() + best_i);
                 s->sequence.erase(s->sequence.begin() + best_i);
                 s->sequence.erase(s->sequence.begin() + best_i);
-                s->sequence.insert(s->sequence.begin() + best_j - 2, reinsert1);
-                s->sequence.insert(s->sequence.begin() + best_j - 2, reinsert2);
                 s->sequence.insert(s->sequence.begin() + best_j - 2, reinsert3);
+                s->sequence.insert(s->sequence.begin() + best_j - 2, reinsert2);
+                s->sequence.insert(s->sequence.begin() + best_j - 2, reinsert1);
 
                 s->cost += bestDelta;
                 return true;
@@ -323,8 +323,6 @@ void LocalSearch(Solution *s, Data& matrizAdj){
     int a, b, c, d, e;
     a = b = c = d = e = 0;
 
-    s->sequence.erase(s->sequence.begin());
-    s->sequence.erase(s->sequence.end() - 1);
 
     while(!NL.empty()){
         int n = rand() % NL.size();
@@ -354,10 +352,6 @@ void LocalSearch(Solution *s, Data& matrizAdj){
     
     }
 
-
-
-    s->sequence.insert(s->sequence.begin(), 1);
-    s->sequence.push_back(1);
 }
 
 void Perturbation(Solution* s){
@@ -440,12 +434,6 @@ Solution ILS(int maxIter, int maxIterILS, Data& matrizAdj){
     Solution bestOfAll;
     bestOfAll.cost = INFINITY;
 
-    //creating CL
-    // size_t n = matrizAdj.getDimension();
-    // vector<int> CL;
-    // for(size_t i = 2; i <= n; i++) {
-    //     CL.push_back(i);
-    //     }
 
     for(int i = 0; i < maxIter; i++){
         Solution s = Construction(matrizAdj);
@@ -483,43 +471,38 @@ int main(int argc, char** argv) {
     maxIter = 50;
     double sumCost = 0, sumTime = 0;
 
+    
+
     if(n >= 150){
             maxIterILS = n / 2;
         } else{
             maxIterILS = n;
         }
-
-        // Solution s = Construction(data);
-
-        // showSolution(&s);
-        // calculateSolutionCost(&s, data);
-        // cout << s.cost << endl;
-
-        // if(bestImprovementSwap(&s, data)){
-        //     showSolution(&s);
-        //     calculateSolutionCost(&s, data);
-        //     cout << s.cost << endl;
-        // }
-
+ 
 
     for(int i = 0; i < 10; i++){
         auto begin = chrono::high_resolution_clock::now();
 
-        Solution best = ILS(maxIter, maxIterILS, data);
+        best = ILS(maxIter, maxIterILS, data);
 
         auto end = chrono::high_resolution_clock::now();
         auto time = chrono::duration_cast<chrono::milliseconds>(end - begin);
 
+
         sumCost += best.cost;
         sumTime += (time.count()/1000.0);
 
-        cout << i << "- " << sumTime << endl;
+        cout << i << "- " << sumTime << " - " << best.cost << endl;
+        
+            
     }
+
 
     sumCost /= 10.0;
     sumTime /= 10.0;
 
     cout << sumTime << " " << sumCost << endl;
+    
 
     return 0;
 }
