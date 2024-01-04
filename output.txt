@@ -1,0 +1,205 @@
+Média do custo e o tempo em segundos de 10 execuções do algoritmo em cada instância. Intel® Core™ i5-1035G1 CPU @ 1.00GHz × 8	
+	
+a280.tsp:	
+Tempo: 12.8728	Custo: 2682.4
+	
+ali535.tsp:	
+Tempo: 129.998	Custo: 211837
+	
+att48.tsp:	
+Tempo: 0.0672	Custo: 10655.5
+	
+att532.tsp:	
+Tempo: 114.162	Custo: 28756.8
+	
+bayg29.tsp:	
+Tempo: 0.0143	Custo: 1611
+	
+bays29.tsp:	
+Tempo: 0.015	Custo: 2020
+	
+berlin52.tsp:	
+Tempo: 0.0892	Custo: 7595.5
+	
+bier127.tsp:	
+Tempo: 1.427	Custo: 119784
+	
+brazil58.tsp:	
+Tempo: 0.1251	Custo: 25396
+	
+brg180.tsp:	
+Tempo: 2.5142	Custo: 2046
+	
+burma14.tsp:	
+Tempo: 0.0024	Custo: 3323
+	
+ch130.tsp:	
+Tempo: 1.547	Custo: 6235
+	
+ch150.tsp:	
+Tempo: 2.0155	Custo: 6706
+	
+d198.tsp:	
+Tempo: 4.8357	Custo: 15923.1
+	
+d493.tsp:	
+Tempo: 89.1416	Custo: 36468.1
+	
+dantzig42.tsp:	
+Tempo: 0.0444	Custo: 699.5
+	
+eil101.tsp:	
+Tempo: 0.5814	Custo: 648.6
+	
+eil51.tsp:	
+Tempo: 0.0779	Custo: 430.6
+	
+eil76.tsp:	
+Tempo: 0.2572	Custo: 551.6 
+	
+fl417.tsp:	
+Tempo: 49.7565 	Custo: 12016
+	
+fri26.tsp:	
+Tempo: 0.0095	Custo: 937
+	
+gil262.tsp:	
+Tempo: 10.8643	Custo: 2471.3
+	
+gr120.tsp:	
+Tempo: 1.1903	Custo: 7093.9
+	
+gr137.tsp:	
+Tempo: 1.7951	Custo: 71031.9
+	
+gr17.tsp:	
+Tempo: 0.0026	Custo: 2085
+	
+gr202.tsp:	
+Tempo: 5.4061	Custo: 41315.9
+	
+gr21.tsp:	
+Tempo: 0.0098	Custo: 2707
+	
+gr229.tsp:	
+Tempo: 9.164	Custo: 138518
+	
+gr24.tsp:	
+Tempo: 0.0133	Custo: 1272
+	
+gr431.tsp:	
+Tempo: 61.095	Custo: 177594
+	
+gr48.tsp:	
+Tempo: 0.0678	Custo: 5059.9
+	
+gr96.tsp:	
+Tempo: 0.5785	Custo: 55715.1
+	
+hk48.tsp:	
+Tempo: 0.0676	Custo: 11517.6
+	
+kroA100.tsp:	
+Tempo: 0.6617	Custo: 21526.8
+	
+kroA150.tsp:	
+Tempo: 2.0542	Custo: 27127.1
+	
+kroA200.tsp:	
+Tempo: 5.695	Custo: 30177.2
+	
+kroB100.tsp:	
+Tempo: 0.6747	Custo: 22442.7
+	
+kroB150.tsp:	
+Tempo: 2.1008	Custo: 26661.8
+	
+kroB200.tsp:	
+Tempo: 5.7612	Custo: 30355.7
+	
+kroC100.tsp:	
+Tempo: 0.6855	Custo: 21012.2
+	
+kroD100.tsp:	
+Tempo: 0.656	Custo: 21572.7
+	
+kroE100.tsp:	
+Tempo: 0.6763	Custo: 22324.4
+	
+lin105.tsp:	
+Tempo: 0.7737	Custo: 14461.9
+	
+lin318.tsp:	
+Tempo: 24.6667	Custo: 43493.1
+	
+linhp318.tsp:	
+Tempo: 25.1415	Custo: 43389.1
+	
+pcb442.tsp:	
+Tempo: 65.088	Custo: 52835.6
+	
+pr107.tsp:	
+Tempo: 0.7772	Custo: 44624.9
+	
+pr124.tsp:	
+Tempo: 1.2554	Custo: 59454
+	
+pr136.tsp:	
+Tempo: 1.7549	Custo: 99096.8
+	
+pr144.tsp:	
+Tempo: 1.9508	Custo: 58670.5
+	
+pr152.tsp:	
+Tempo: 2.0336	Custo: 74254
+	
+pr226.tsp:	
+Tempo: 7.6821	Custo: 81269.6
+	
+pr264.tsp:	
+Tempo: 12.7263	Custo: 51016.7
+	
+pr299.tsp:	
+Tempo: 19.1025	Custo: 49721.7
+	
+pr76.tsp:	
+Tempo: 0.2673	Custo: 109299
+	
+rat195.tsp:	
+Tempo: 4.4017	Custo: 2418.6
+	
+rat99.tsp:	
+Tempo: 0.5752	Custo: 1246
+	
+rd100.tsp:	
+Tempo: 0.7157	Custo: 8030.5
+	
+rd400.tsp:	
+Tempo: 50.1041	Custo: 15909.9
+	
+si175.tsp:	
+Tempo: 3.0516	Custo: 21477.1
+	
+si535.tsp:	
+Tempo: 97.4154	Custo: 48732
+	
+st70.tsp:	
+Tempo: 0.2072	Custo: 680.7
+	
+swiss42.tsp:	
+Tempo: 0.0451	Custo: 1273
+	
+ts225.tsp:	
+Tempo: 7.9485	Custo: 128069
+	
+tsp225.tsp:	
+Tempo: 7.412	Custo: 4050.5
+	
+u159.tsp:	
+Tempo: 2.5105	Custo: 42898.2
+	
+ulysses16.tsp:	
+Tempo: 0.0041	Custo: 6859
+	
+ulysses22.tsp:	
+Tempo: 0.0074	Custo: 7013
