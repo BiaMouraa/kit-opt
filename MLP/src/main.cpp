@@ -41,12 +41,12 @@ typedef struct Subsequence{
 //s = solucao atual
 //subseq_matrix[i][j] = subseq que começa no nó i e termina no nó j de s
 //define todas as possibilidades de subsequencias da solucao
-void UptadeAllSubseq(Solution& s, vector<vector<Subsequence>>& subseq_matrix, Data& data){
-    int n = s.sequence.size();
+void UptadeAllSubseq(Solution *s, vector<vector<Subsequence>>& subseq_matrix, Data& data, int begin = -1, int end = -1){
+    int n = s->sequence.size();
 
     //subsequencias de um unico nó
     for(int i = 0; i < n; i++){
-        int v = s.sequence[i];
+        int v = s->sequence[i];
         if(i == 0)
             subseq_matrix[i][i].W = 0;
         else
@@ -57,17 +57,35 @@ void UptadeAllSubseq(Solution& s, vector<vector<Subsequence>>& subseq_matrix, Da
         subseq_matrix[i][i].last = v;
     }
 
-    //define todas as subsequencias [i][j]
-    for (int i = 0; i < n; i++){
-        for(int j = i + 1; j < n; j++){
-            subseq_matrix[i][j] = Subsequence::Concatenate(subseq_matrix[i][j-1], subseq_matrix[j][j], data);
+    if(begin != -1 && end != -1){ //atualiza apenas as subsequencias que foram alteradas
+        for(int i = 0; i <= end; i++){
+            for(int j = begin; j <= end; j++){
+                if(i >= j)
+                    j = i + 1;
+                subseq_matrix[i][j] = Subsequence::Concatenate(subseq_matrix[i][j-1], subseq_matrix[j][j], data);
+            }
         }
-    }
 
-    //subsequencias invertidas (necessario para o 2-opt)
-    for(int i = n - 1; i >= 0; i--){    
-        for(int j = i - 1; j >= 0; j--){
-            subseq_matrix[i][j] = Subsequence::Concatenate(subseq_matrix[i][j+1], subseq_matrix[j][j], data);
+        for(int i = n - 1; i >= begin; i--){    
+            for(int j = end; j >= 0; j--){
+                if(i <= j)
+                    j = i - 1;
+                subseq_matrix[i][j] = Subsequence::Concatenate(subseq_matrix[i][j+1], subseq_matrix[j][j], data);
+            }
+        }
+
+    }else{ //define todas as subsequencias [i][j]
+        for (int i = 0; i < n; i++){
+            for(int j = i + 1; j < n; j++){
+                subseq_matrix[i][j] = Subsequence::Concatenate(subseq_matrix[i][j-1], subseq_matrix[j][j], data);
+            }
+        }
+
+        //subsequencias invertidas (necessario para o 2-opt)
+        for(int i = n - 1; i >= 0; i--){    
+            for(int j = i - 1; j >= 0; j--){
+                subseq_matrix[i][j] = Subsequence::Concatenate(subseq_matrix[i][j+1], subseq_matrix[j][j], data);
+            }
         }
     }
 }
@@ -80,28 +98,21 @@ void showSolution(Solution *s){
     cout << s->sequence.back() << endl;
 }
 
-void calculateSolutionCost(Solution *s, Data& matrizAdj){
+void calculateSolutionCost(Solution *s, Data& data){
     s->cost = 0;
     int n = s->sequence.size() - 1;
     for(int i = 0; i < n; i++)
-        s->cost += matrizAdj.getDistance(s->sequence[i],s->sequence[i+1]);
+        s->cost += data.getDistance(s->sequence[i],s->sequence[i+1]);
 }
 
-vector<InsertionInfo> calculateInsertionCost(Solution s, vector<int> CL, Data& matrizAdj){
-    vector<InsertionInfo> insertionCost ((s.sequence.size()-1)*CL.size());
+vector<InsertionInfo> calculateInsertionCost(int r, vector<int> CL, Data& data){
+    vector<InsertionInfo> insertionCost (CL.size());
 
-    int l = 0, count = 0;
-    int n = s.sequence.size() - 1;
-    for(int a = 0, b = 1; count < n; a++, b++){
-        int i = s.sequence[a];
-        int j = s.sequence[b];
-        //for(int i = 0; i < CL.size() - 1; i++){
-            for(auto k : CL){
-            insertionCost[l].cost = matrizAdj.getDistance(i, k) + matrizAdj.getDistance(k, j) - matrizAdj.getDistance(i,j);
-            insertionCost[l].nInserted = k;
-            insertionCost[l].edgeRemoved = a;
-            l++;
-        }
+    //calcula a distancia do ultimo no (r) a todos os elementos de CL
+    int count = 0;
+    for(auto k : CL){
+        insertionCost[count].cost = data.getDistance(r, k);
+        insertionCost[count].nInserted = k;
         count++;
     }
     return insertionCost;
@@ -111,12 +122,13 @@ bool compare(InsertionInfo m, InsertionInfo n){
     return (m.cost < n.cost);
 }
 
-Solution Construction(Data& matrizAdj){
+Solution Construction(Data& data){
     Solution s = {{1,1},0};
+    int r = 1;
 
 
     //creating CL
-    size_t n = matrizAdj.getDimension();
+    size_t n = data.getDimension();
     vector<int> CL;
     for(size_t i = 2; i <= n; i++) {
         CL.push_back(i);
@@ -134,17 +146,19 @@ Solution Construction(Data& matrizAdj){
 
 
     while(!CL.empty()){
-        vector<InsertionInfo> insertionCost = calculateInsertionCost(s, CL, matrizAdj);
+        vector<InsertionInfo> insertionCost = calculateInsertionCost(r, CL, data);
         sort(insertionCost.begin(), insertionCost.end(), compare);
 
         double alpha = (double) rand() / (RAND_MAX + 1.0);
         alpha += 0.000000000001;
         if(alpha == 0)
             cout << alpha << endl;
+
+        //define e insere o no na sequencia
         int selected = rand() % ((int) ceil(alpha*insertionCost.size()));
-        
-        s.sequence.insert(s.sequence.begin() + insertionCost[selected].edgeRemoved + 1, insertionCost[selected].nInserted);
-        
+        r = insertionCost[selected].nInserted; 
+        s.sequence.insert(s.sequence.begin()+s.sequence.size()-1, r);
+
         int clPos = 0;
         while(true){
             if(CL[clPos] == insertionCost[selected].nInserted){
@@ -156,39 +170,36 @@ Solution Construction(Data& matrizAdj){
         }
         
     }
-    calculateSolutionCost(&s, matrizAdj);
+    calculateSolutionCost(&s, data);
 
     return s;
 }
 
-bool bestImprovementSwap(Solution *s, Data& matrizAdj){
+bool bestImprovementSwap(Solution *s, vector<vector<Subsequence>>& subseq_matrix, Data& data){
 
-
-    double bestDelta = 0;
     int best_i, best_j;
     int n = s->sequence.size() - 1;
+    int totalCost = subseq_matrix[0][n].C;
+    int bestCost = totalCost;
 
+    Subsequence sigma1, sigma2, sigma3, sigma;
 
-    for(int i = 2; i < n; i++){
-
-        int ni = s->sequence[i];
-        int ni_prev = s->sequence[i-1];
-        int ni_next = s->sequence[i+1];
-
+    for(int i = 1; i < n; i++){
         for(int j = i + 1; j < n; j++){
-            int nj = s->sequence[j];
-            int nj_prev = s->sequence[j-1];
-            int nj_next = s->sequence[j+1];
 
-            double delta;
-
-            if(j == i + 1)
-                delta = -matrizAdj.getDistance(ni_prev, ni) - matrizAdj.getDistance(nj, nj_next) + matrizAdj.getDistance(ni_prev, nj) + matrizAdj.getDistance(ni, nj_next);
-            else
-                delta = -matrizAdj.getDistance(ni_prev, ni) - matrizAdj.getDistance(ni, ni_next) - matrizAdj.getDistance(nj_prev, nj) - matrizAdj.getDistance(nj, nj_next) + matrizAdj.getDistance(ni_prev, nj) + matrizAdj.getDistance(nj, ni_next) + matrizAdj.getDistance(nj_prev, ni) + matrizAdj.getDistance(ni, nj_next);
-
-            if(delta < bestDelta){
-                bestDelta = delta;
+            if(j == i + 1){
+                sigma1 = Subsequence::Concatenate(subseq_matrix[0][i-1], subseq_matrix[j][j], data);
+                sigma2 = Subsequence::Concatenate(sigma1, subseq_matrix[i][i], data);
+                sigma = Subsequence::Concatenate(sigma2, subseq_matrix[j+1][n], data);
+            
+            }else{
+                sigma1 = Subsequence::Concatenate(subseq_matrix[0][i-1], subseq_matrix[j][j], data);
+                sigma2 = Subsequence::Concatenate(sigma1, subseq_matrix[i+1][j-1], data);
+                sigma3 = Subsequence::Concatenate(sigma2, subseq_matrix[i][i], data);
+                sigma = Subsequence::Concatenate(sigma3, subseq_matrix[j+1][n], data);
+            }
+            if(sigma.C < bestCost){
+                bestCost = sigma.C;
                 best_i = i;
                 best_j = j;
             }
@@ -196,80 +207,66 @@ bool bestImprovementSwap(Solution *s, Data& matrizAdj){
     }
 
 
-    if(bestDelta < 0){
+    if(bestCost < totalCost){
         swap(s->sequence[best_i], s->sequence[best_j]);
-        s->cost += bestDelta;
-
+        UptadeAllSubseq(s, subseq_matrix, data, best_i, best_j);
         return true;
     }
 
     return false;
 }
 
-bool bestImprovementeOrOpt(Solution *s, int type, Data& matrizAdj){
-    double bestDelta = 0;
+bool bestImprovementOrOpt(Solution *s, vector<vector<Subsequence>>& subseq_matrix, int type, Data& data){
     int best_i, best_j;
     int n = s->sequence.size() - 1;
     double delta_i, delta_j;
+    double totalCost = subseq_matrix[0][n].C;
+    double bestCost = totalCost;
+
+    Subsequence sigma1, sigma2, sigma;
 
     switch(type){
         case 1: //Reinsertion
             for(int i = 1; i < n; i++){
-
-            int ni = s->sequence[i];
-            int ni_prev = s->sequence[i-1];
-            int ni_next = s->sequence[i+1];
-
-            delta_i = matrizAdj.getDistance(ni_prev, ni_next) - matrizAdj.getDistance(ni_prev, ni) - matrizAdj.getDistance(ni, ni_next);
-
                 for(int j = i + 1; j < n; j++){
-                    int nj = s->sequence[j];
-                    int nj_next = s->sequence[j+1];
+                    sigma1 = Subsequence::Concatenate(subseq_matrix[0][i-1], subseq_matrix[i+1][j-1], data);
+                    sigma2 = Subsequence::Concatenate(sigma1, subseq_matrix[i][i], data);
+                    sigma = Subsequence::Concatenate(sigma2, subseq_matrix[j+1][n], data);
 
-                        delta_j = matrizAdj.getDistance(ni, nj_next) + matrizAdj.getDistance(ni, nj) - matrizAdj.getDistance(nj, nj_next);
-
-                    if(delta_i + delta_j < bestDelta){
-                        bestDelta = delta_i + delta_j;
+                    if(sigma.C < bestCost){
+                        bestCost = sigma.C;
                         best_i = i;
                         best_j = j;
                     }
                 }
             }
     
-            if(bestDelta < 0){
+            if(bestCost < totalCost){
                 int reinsert = s->sequence[best_i];
                 s->sequence.erase(s->sequence.begin() + best_i);
                 s->sequence.insert(s->sequence.begin() + best_j, reinsert);
 
-                s->cost += bestDelta;
+                UptadeAllSubseq(s, subseq_matrix, data, best_i, best_j);
                 return true;
             }
             return false;
 
         case 2: //Or-Opt2
             for(int i = 1; i < n - 1; i++){
-
-            int ni1 = s->sequence[i];
-            int ni2= s->sequence[i+1];
-            int ni_prev = s->sequence[i-1];
-            int ni_next = s->sequence[i+2];
-
-            delta_i = matrizAdj.getDistance(ni_prev, ni_next) - matrizAdj.getDistance(ni_prev, ni1) - matrizAdj.getDistance(ni2, ni_next);
-
                 for(int j = i + 2; j < n; j++){
-                    int nj = s->sequence[j];
-                    int nj_next = s->sequence[j+1];
+                    
+                    sigma1 = Subsequence::Concatenate(subseq_matrix[0][i-1], subseq_matrix[i+2][j-1], data);
+                    sigma2 = Subsequence::Concatenate(sigma1, subseq_matrix[i][i+1], data);
+                    sigma = Subsequence::Concatenate(sigma2, subseq_matrix[j][n], data);
 
-                        delta_j = matrizAdj.getDistance(ni2, nj_next) + matrizAdj.getDistance(ni1, nj) - matrizAdj.getDistance(nj, nj_next);
-
-                    if(delta_i + delta_j < bestDelta){
-                        bestDelta = delta_i + delta_j;
+                    if(sigma.C < bestCost){
+                        bestCost = sigma.C;
                         best_i = i;
                         best_j = j;
                     }
                 }
             }
-            if(bestDelta < 0){
+            if(bestCost < totalCost){
                 int reinsert1 = s->sequence[best_i];
                 int reinsert2 = s->sequence[best_i + 1];
 
@@ -278,38 +275,28 @@ bool bestImprovementeOrOpt(Solution *s, int type, Data& matrizAdj){
                 s->sequence.insert(s->sequence.begin() + best_j - 1, reinsert2);
                 s->sequence.insert(s->sequence.begin() + best_j - 1, reinsert1);
 
-                s->cost += bestDelta;
+                UptadeAllSubseq(s, subseq_matrix, data, best_i, best_j);
                 return true;
             }
             return false;
 
         case 3: //Or-Opt3
             for(int i = 1; i < n - 2; i++){
-
-                int ni1 = s->sequence[i];
-                int ni3= s->sequence[i+2];
-                int ni_prev = s->sequence[i-1];
-                int ni_next = s->sequence[i+3];
-                
-
-                delta_i = matrizAdj.getDistance(ni_prev, ni_next) - matrizAdj.getDistance(ni_prev, ni1) - matrizAdj.getDistance(ni3, ni_next);
-
                 for(int j = i + 3; j < n; j++){
-                    int nj = s->sequence[j];
-                    int nj_next = s->sequence[j+1];
+                    sigma1 = Subsequence::Concatenate(subseq_matrix[0][i-1], subseq_matrix[i+3][j-1], data);
+                    sigma2 = Subsequence::Concatenate(sigma1, subseq_matrix[i][i+2], data);
+                    sigma = Subsequence::Concatenate(sigma2, subseq_matrix[j][n], data);
 
-                        delta_j = matrizAdj.getDistance(ni3, nj_next) + matrizAdj.getDistance(ni1, nj) - matrizAdj.getDistance(nj, nj_next);
+                    if(sigma.C < bestCost){
 
-                    if(delta_i + delta_j < bestDelta){
-
-                        bestDelta = delta_i + delta_j;
+                        bestCost = sigma.C;
                         best_i = i;
                         best_j = j;
                     }
                 }
             }
             
-            if(bestDelta < 0){
+            if(bestCost < totalCost){
                 int reinsert1 = s->sequence[best_i];
                 int reinsert2 = s->sequence[best_i + 1];
                 int reinsert3 = s->sequence[best_i + 2];
@@ -321,7 +308,7 @@ bool bestImprovementeOrOpt(Solution *s, int type, Data& matrizAdj){
                 s->sequence.insert(s->sequence.begin() + best_j - 2, reinsert2);
                 s->sequence.insert(s->sequence.begin() + best_j - 2, reinsert1);
 
-                s->cost += bestDelta;
+                UptadeAllSubseq(s, subseq_matrix, data, best_i, best_j);
                 return true;
             }
             return false;
@@ -330,50 +317,44 @@ bool bestImprovementeOrOpt(Solution *s, int type, Data& matrizAdj){
 }
 
 
-bool bestImprovement2Opt(Solution *s, Data& matrizAdj){
-    double bestDelta = 0;
+bool bestImprovement2Opt(Solution *s, vector<vector<Subsequence>>& subseq_matrix, Data& data){
     int best_i, best_j;
     int n = s->sequence.size() - 1;
+    double totalCost = subseq_matrix[0][n].C;
+    double bestCost = totalCost;
+
+    Subsequence sigma1, sigma;
 
     for(int i = 1; i < n; i++){
+        for(int j = i + 2; j < n; j++){
 
-        int ni = s->sequence[i];
-        int ni_next = s->sequence[i+1];
-
-        double delta;
-
-        for(int j = i + 2; j < n - 1; j++){
-            int nj = s->sequence[j];
-            int nj_next = s->sequence[j+1];
-
-                delta = -matrizAdj.getDistance(ni, ni_next) - matrizAdj.getDistance(nj, nj_next) + matrizAdj.getDistance(ni, nj) + matrizAdj.getDistance(ni_next, nj_next);
-
-            if(delta < bestDelta){
-                bestDelta = delta;
+            sigma1 = Subsequence::Concatenate(subseq_matrix[0][i-1], subseq_matrix[j][i], data);
+            sigma = Subsequence::Concatenate(sigma1, subseq_matrix[j+1][n], data);
+            
+            if(sigma.C < bestCost){
+                bestCost = sigma.C;
                 best_i = i;
                 best_j = j;
             }
         }
     }
 
-    if(bestDelta < 0){
+    if(bestCost < totalCost){
         for(int i = best_i + 1, j = best_j; i < j; i++, j--){
             int aux = s->sequence[i];
             s->sequence[i] = s->sequence[j];
             s->sequence[j] = aux;
         }
 
-        s->cost += bestDelta;
+        UptadeAllSubseq(s, subseq_matrix, data, best_i, best_j);
         return true;
     }
     return false;
 }
 
-void LocalSearch(Solution *s, Data& matrizAdj){
+void LocalSearch(Solution *s, vector<vector<Subsequence>>& subseq_matrix, Data& data){
     vector<int> NL = {1, 2, 3, 4, 5};
     bool improved = false;
-    int a, b, c, d, e;
-    a = b = c = d = e = 0;
 
 
     while(!NL.empty()){
@@ -381,19 +362,19 @@ void LocalSearch(Solution *s, Data& matrizAdj){
         switch (NL[n])
         {
         case 1:
-            improved = bestImprovementSwap(s, matrizAdj);
+           improved = bestImprovementSwap(s, subseq_matrix, data);
             break;
         case 2:
-            improved = bestImprovement2Opt(s, matrizAdj);
+            improved = bestImprovement2Opt(s, subseq_matrix, data);
             break;
         case 3:
-            improved = bestImprovementeOrOpt(s, 1, matrizAdj);
+            improved = bestImprovementOrOpt(s, subseq_matrix, 1, data);
             break;
         case 4: 
-            improved = bestImprovementeOrOpt(s, 2, matrizAdj);
+            improved = bestImprovementOrOpt(s, subseq_matrix, 2, data);
             break;
         case 5:
-            improved = bestImprovementeOrOpt(s, 3, matrizAdj);
+            improved = bestImprovementOrOpt(s, subseq_matrix, 3, data);
             break;
         }
 
@@ -482,19 +463,19 @@ void Perturbation(Solution* s){
     
 }
 
-Solution ILS(int maxIter, int maxIterILS, Data& matrizAdj){
+Solution ILS(int maxIter, int maxIterILS, Data& data){
     Solution bestOfAll;
     bestOfAll.cost = INFINITY;
 
 
     for(int i = 0; i < maxIter; i++){
-        Solution s = Construction(matrizAdj);
+        Solution s = Construction(data);
         Solution best = s;
 
         int iterILS = 0;
         while(iterILS <= maxIterILS){
-            LocalSearch(&s, matrizAdj);
-            calculateSolutionCost(&s, matrizAdj);
+            //LocalSearch(&s, data);
+            calculateSolutionCost(&s, data);
             if(s.cost < best.cost){
                 best = s;
                 iterILS = 0;
@@ -518,42 +499,52 @@ int main(int argc, char** argv) {
     data.readData();
     size_t n = data.getDimension();
 
-    int maxIter, maxIterILS;
-    Solution best;
-    maxIter = 50;
-    double sumCost = 0, sumTime = 0;
+    Solution s;
 
-    
-
-    if(n >= 150){
-            maxIterILS = n / 2;
-        } else{
-            maxIterILS = n;
+    for(int i = 1; i <= n; i++){
+        for (int j = 1; j <= n; j++){
+            cout << data.getDistance(i,j) << " ";
         }
- 
-
-    for(int i = 0; i < 10; i++){
-        auto begin = chrono::high_resolution_clock::now();
-
-        best = ILS(maxIter, maxIterILS, data);
-
-        auto end = chrono::high_resolution_clock::now();
-        auto time = chrono::duration_cast<chrono::milliseconds>(end - begin);
-
-
-        sumCost += best.cost;
-        sumTime += (time.count()/1000.0);
-
-        cout << i << "- " << sumTime << " - " << best.cost << endl;
-        
-            
+        cout << endl;
     }
 
 
-    sumCost /= 10.0;
-    sumTime /= 10.0;
+    // int maxIter, maxIterILS;
+    // Solution best;
+    // maxIter = 50;
+    // double sumCost = 0, sumTime = 0;
 
-    cout << sumTime << " " << sumCost << endl;
+    
+
+    // if(n >= 150){
+    //         maxIterILS = n / 2;
+    //     } else{
+    //         maxIterILS = n;
+    //     }
+ 
+
+    // for(int i = 0; i < 10; i++){
+    //     auto begin = chrono::high_resolution_clock::now();
+
+    //     best = ILS(maxIter, maxIterILS, data);
+
+    //     auto end = chrono::high_resolution_clock::now();
+    //     auto time = chrono::duration_cast<chrono::milliseconds>(end - begin);
+
+
+    //     sumCost += best.cost;
+    //     sumTime += (time.count()/1000.0);
+
+    //     cout << i << "- " << sumTime << " - " << best.cost << endl;
+        
+            
+    // }
+
+
+    // sumCost /= 10.0;
+    // sumTime /= 10.0;
+
+    // cout << sumTime << " " << sumCost << endl;
     
 
     return 0;
