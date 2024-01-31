@@ -13,6 +13,7 @@ using namespace std;
 typedef struct Solution {
     vector<int> sequence;
     double cost;
+    double accumulated;
 } Solution;
 
 typedef struct InsertionInfo{
@@ -88,6 +89,7 @@ void UptadeAllSubseq(Solution *s, vector<vector<Subsequence>>& subseq_matrix, Da
             }
         }
     }
+    s->accumulated = subseq_matrix[0][n].C;
 }
 
 void showSolution(Solution *s){
@@ -229,7 +231,7 @@ bool bestImprovementOrOpt(Solution *s, vector<vector<Subsequence>>& subseq_matri
         case 1: //Reinsertion
             for(int i = 1; i < n; i++){
                 for(int j = i + 1; j < n; j++){
-                    sigma1 = Subsequence::Concatenate(subseq_matrix[0][i-1], subseq_matrix[i+1][j-1], data);
+                    sigma1 = Subsequence::Concatenate(subseq_matrix[0][i-1], subseq_matrix[i+1][j], data);
                     sigma2 = Subsequence::Concatenate(sigma1, subseq_matrix[i][i], data);
                     sigma = Subsequence::Concatenate(sigma2, subseq_matrix[j+1][n], data);
 
@@ -240,7 +242,7 @@ bool bestImprovementOrOpt(Solution *s, vector<vector<Subsequence>>& subseq_matri
                     }
                 }
             }
-    
+
             if(bestCost < totalCost){
                 int reinsert = s->sequence[best_i];
                 s->sequence.erase(s->sequence.begin() + best_i);
@@ -255,9 +257,9 @@ bool bestImprovementOrOpt(Solution *s, vector<vector<Subsequence>>& subseq_matri
             for(int i = 1; i < n - 1; i++){
                 for(int j = i + 2; j < n; j++){
                     
-                    sigma1 = Subsequence::Concatenate(subseq_matrix[0][i-1], subseq_matrix[i+2][j-1], data);
+                    sigma1 = Subsequence::Concatenate(subseq_matrix[0][i-1], subseq_matrix[i+2][j], data);
                     sigma2 = Subsequence::Concatenate(sigma1, subseq_matrix[i][i+1], data);
-                    sigma = Subsequence::Concatenate(sigma2, subseq_matrix[j][n], data);
+                    sigma = Subsequence::Concatenate(sigma2, subseq_matrix[j+1][n], data);
 
                     if(sigma.C < bestCost){
                         bestCost = sigma.C;
@@ -266,6 +268,8 @@ bool bestImprovementOrOpt(Solution *s, vector<vector<Subsequence>>& subseq_matri
                     }
                 }
             }
+
+            
             if(bestCost < totalCost){
                 int reinsert1 = s->sequence[best_i];
                 int reinsert2 = s->sequence[best_i + 1];
@@ -283,9 +287,9 @@ bool bestImprovementOrOpt(Solution *s, vector<vector<Subsequence>>& subseq_matri
         case 3: //Or-Opt3
             for(int i = 1; i < n - 2; i++){
                 for(int j = i + 3; j < n; j++){
-                    sigma1 = Subsequence::Concatenate(subseq_matrix[0][i-1], subseq_matrix[i+3][j-1], data);
+                    sigma1 = Subsequence::Concatenate(subseq_matrix[0][i-1], subseq_matrix[i+3][j], data);
                     sigma2 = Subsequence::Concatenate(sigma1, subseq_matrix[i][i+2], data);
-                    sigma = Subsequence::Concatenate(sigma2, subseq_matrix[j][n], data);
+                    sigma = Subsequence::Concatenate(sigma2, subseq_matrix[j+1][n], data);
 
                     if(sigma.C < bestCost){
 
@@ -322,6 +326,7 @@ bool bestImprovement2Opt(Solution *s, vector<vector<Subsequence>>& subseq_matrix
     int n = s->sequence.size() - 1;
     double totalCost = subseq_matrix[0][n].C;
     double bestCost = totalCost;
+    
 
     Subsequence sigma1, sigma;
 
@@ -340,13 +345,13 @@ bool bestImprovement2Opt(Solution *s, vector<vector<Subsequence>>& subseq_matrix
     }
 
     if(bestCost < totalCost){
-        for(int i = best_i + 1, j = best_j; i < j; i++, j--){
+        for(int i = best_i, j = best_j; i < j; i++, j--){
             int aux = s->sequence[i];
             s->sequence[i] = s->sequence[j];
             s->sequence[j] = aux;
         }
 
-        UptadeAllSubseq(s, subseq_matrix, data, best_i, best_j);
+        UptadeAllSubseq(s, subseq_matrix, data);
         return true;
     }
     return false;
@@ -501,12 +506,12 @@ int main(int argc, char** argv) {
 
     Solution s;
 
-    for(int i = 1; i <= n; i++){
-        for (int j = 1; j <= n; j++){
-            cout << data.getDistance(i,j) << " ";
-        }
-        cout << endl;
-    }
+    // for(int i = 1; i <= n; i++){
+    //     for (int j = 1; j <= n; j++){
+    //         cout << data.getDistance(i,j) << " ";
+    //     }
+    //     cout << endl;
+    // }
 
 
     // int maxIter, maxIterILS;
