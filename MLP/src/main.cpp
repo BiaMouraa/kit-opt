@@ -178,7 +178,7 @@ Solution Construction(Data& data){
 }
 
 bool bestImprovementSwap(Solution *s, vector<vector<Subsequence>>& subseq_matrix, Data& data){
-
+    //cout << "swap";
     int best_i, best_j;
     int n = s->sequence.size() - 1;
     int totalCost = subseq_matrix[0][n].C;
@@ -357,7 +357,7 @@ bool bestImprovement2Opt(Solution *s, vector<vector<Subsequence>>& subseq_matrix
     return false;
 }
 
-void LocalSearch(Solution *s, vector<vector<Subsequence>>& subseq_matrix, Data& data){
+void LocalSearch(Solution& s, vector<vector<Subsequence>>& subseq_matrix, Data& data){
     vector<int> NL = {1, 2, 3, 4, 5};
     bool improved = false;
 
@@ -367,19 +367,19 @@ void LocalSearch(Solution *s, vector<vector<Subsequence>>& subseq_matrix, Data& 
         switch (NL[n])
         {
         case 1:
-           improved = bestImprovementSwap(s, subseq_matrix, data);
+           improved = bestImprovementSwap(&s, subseq_matrix, data);
             break;
         case 2:
-            improved = bestImprovement2Opt(s, subseq_matrix, data);
+            improved = bestImprovement2Opt(&s, subseq_matrix, data);
             break;
         case 3:
-            improved = bestImprovementOrOpt(s, subseq_matrix, 1, data);
+            improved = bestImprovementOrOpt(&s, subseq_matrix, 1, data);
             break;
         case 4: 
-            improved = bestImprovementOrOpt(s, subseq_matrix, 2, data);
+            improved = bestImprovementOrOpt(&s, subseq_matrix, 2, data);
             break;
         case 5:
-            improved = bestImprovementOrOpt(s, subseq_matrix, 3, data);
+            improved = bestImprovementOrOpt(&s, subseq_matrix, 3, data);
             break;
         }
 
@@ -471,27 +471,44 @@ void Perturbation(Solution* s){
 Solution ILS(int maxIter, int maxIterILS, Data& data){
     Solution bestOfAll;
     bestOfAll.cost = INFINITY;
-
-
+    double bestCostAcum;
+    double bestOfAllCost;
+    size_t n = data.getDimension();
+    vector<vector<Subsequence>> subseq_matrix(n + 1, vector<Subsequence>(n + 1));
+ 
     for(int i = 0; i < maxIter; i++){
         Solution s = Construction(data);
+        UptadeAllSubseq(&s, subseq_matrix, data);
         Solution best = s;
-
+        bestCostAcum = subseq_matrix[0][n].C;
+        cout << " C ";
+        
         int iterILS = 0;
         while(iterILS <= maxIterILS){
-            //LocalSearch(&s, data);
+            LocalSearch(s, subseq_matrix, data);
+            UptadeAllSubseq(&s, subseq_matrix, data);
             calculateSolutionCost(&s, data);
-            if(s.cost < best.cost){
+
+            cout << " L ";
+
+            if(subseq_matrix[0][n].C < bestCostAcum){
                 best = s;
                 iterILS = 0;
-            }
+                bestCostAcum = subseq_matrix[0][n].C;
+            } 
+
             Perturbation(&best);
+
+            cout << " P ";
+
+            UptadeAllSubseq(&best, subseq_matrix, data);
             iterILS++;
         }
-        if(best.cost < bestOfAll.cost){
+        if(bestCostAcum < bestOfAllCost){
             bestOfAll = best;
+            bestOfAllCost = bestCostAcum;
         }
-    }
+}
     return bestOfAll;
 
 }
@@ -504,52 +521,44 @@ int main(int argc, char** argv) {
     data.readData();
     size_t n = data.getDimension();
 
-    Solution s;
+    int maxIter, maxIterILS;
+    Solution best;
+    maxIter = 50;
+    double sumCost = 0, sumTime = 0;
 
-    // for(int i = 1; i <= n; i++){
-    //     for (int j = 1; j <= n; j++){
-    //         cout << data.getDistance(i,j) << " ";
-    //     }
-    //     cout << endl;
-    // }
-
-
-    // int maxIter, maxIterILS;
-    // Solution best;
-    // maxIter = 50;
-    // double sumCost = 0, sumTime = 0;
-
+    if(n >= 150){
+            maxIterILS = n / 2;
+        } else{
+            maxIterILS = n;
+        }
     
+    
+    for(int i = 0; i < 10; i++){
+        vector<vector<Subsequence>> subseq_matrix(n + 1, vector<Subsequence>(n + 1)); 
+        auto begin = chrono::high_resolution_clock::now();
 
-    // if(n >= 150){
-    //         maxIterILS = n / 2;
-    //     } else{
-    //         maxIterILS = n;
-    //     }
- 
+        cout << maxIter << " - " << maxIterILS << endl;
+        best = ILS(maxIter, maxIterILS, data);
+        UptadeAllSubseq(&best, subseq_matrix, data);
+        cout << "saindo" << endl;
 
-    // for(int i = 0; i < 10; i++){
-    //     auto begin = chrono::high_resolution_clock::now();
-
-    //     best = ILS(maxIter, maxIterILS, data);
-
-    //     auto end = chrono::high_resolution_clock::now();
-    //     auto time = chrono::duration_cast<chrono::milliseconds>(end - begin);
+        auto end = chrono::high_resolution_clock::now();
+        auto time = chrono::duration_cast<chrono::milliseconds>(end - begin);
 
 
-    //     sumCost += best.cost;
-    //     sumTime += (time.count()/1000.0);
+        sumCost += subseq_matrix[0][n].C;
+        sumTime += (time.count()/1000.0);
 
-    //     cout << i << "- " << sumTime << " - " << best.cost << endl;
+        cout << i << "- " << sumTime << " - " << subseq_matrix[0][n].C << endl;
         
             
-    // }
+    }
 
 
-    // sumCost /= 10.0;
-    // sumTime /= 10.0;
+    sumCost /= 10.0;
+    sumTime /= 10.0;
 
-    // cout << sumTime << " " << sumCost << endl;
+    cout << sumTime << " " << sumCost << endl;
     
 
     return 0;
