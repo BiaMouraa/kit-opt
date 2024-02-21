@@ -6,6 +6,7 @@
 #include <cmath>
 #include <ctime>
 #include <chrono>
+#include <thread>
 
 using namespace std;
 
@@ -13,7 +14,6 @@ using namespace std;
 typedef struct Solution {
     vector<int> sequence;
     double cost;
-    double accumulated;
 } Solution;
 
 typedef struct InsertionInfo{
@@ -52,6 +52,7 @@ void UptadeAllSubseq(Solution *s, vector<vector<Subsequence>>& subseq_matrix, Da
             subseq_matrix[i][i].W = 0;
         else
             subseq_matrix[i][i].W = 1;
+
         subseq_matrix[i][i].C = 0;
         subseq_matrix[i][i].T = 0;
         subseq_matrix[i][i].first = v;
@@ -60,7 +61,7 @@ void UptadeAllSubseq(Solution *s, vector<vector<Subsequence>>& subseq_matrix, Da
 
     if(begin != -1 && end != -1){ //atualiza apenas as subsequencias que foram alteradas
         for(int i = 0; i <= end; i++){
-            for(int j = begin; j <= end; j++){
+            for(int j = begin; j < n; j++){
                 if(i >= j)
                     j = i + 1;
                 subseq_matrix[i][j] = Subsequence::Concatenate(subseq_matrix[i][j-1], subseq_matrix[j][j], data);
@@ -89,8 +90,7 @@ void UptadeAllSubseq(Solution *s, vector<vector<Subsequence>>& subseq_matrix, Da
             }
         }
     }
-    s->accumulated = subseq_matrix[0][n].C;
-}
+} 
 
 void showSolution(Solution *s){
     int n = s->sequence.size() - 1;
@@ -178,7 +178,6 @@ Solution Construction(Data& data){
 }
 
 bool bestImprovementSwap(Solution *s, vector<vector<Subsequence>>& subseq_matrix, Data& data){
-    //cout << "swap";
     int best_i, best_j;
     int n = s->sequence.size() - 1;
     int totalCost = subseq_matrix[0][n].C;
@@ -207,7 +206,6 @@ bool bestImprovementSwap(Solution *s, vector<vector<Subsequence>>& subseq_matrix
             }
         }
     }
-
 
     if(bestCost < totalCost){
         swap(s->sequence[best_i], s->sequence[best_j]);
@@ -351,7 +349,7 @@ bool bestImprovement2Opt(Solution *s, vector<vector<Subsequence>>& subseq_matrix
             s->sequence[j] = aux;
         }
 
-        UptadeAllSubseq(s, subseq_matrix, data);
+        UptadeAllSubseq(s, subseq_matrix, data, best_i, best_j);
         return true;
     }
     return false;
@@ -477,38 +475,40 @@ Solution ILS(int maxIter, int maxIterILS, Data& data){
     vector<vector<Subsequence>> subseq_matrix(n + 1, vector<Subsequence>(n + 1));
  
     for(int i = 0; i < maxIter; i++){
+        //cout << " C " << endl;
         Solution s = Construction(data);
         UptadeAllSubseq(&s, subseq_matrix, data);
         Solution best = s;
         bestCostAcum = subseq_matrix[0][n].C;
-        cout << " C ";
+        
         
         int iterILS = 0;
-        while(iterILS <= maxIterILS){
+        while(iterILS <= 1){
+           // cout << " L " << endl;
             LocalSearch(s, subseq_matrix, data);
             UptadeAllSubseq(&s, subseq_matrix, data);
             calculateSolutionCost(&s, data);
-
-            cout << " L ";
 
             if(subseq_matrix[0][n].C < bestCostAcum){
                 best = s;
                 iterILS = 0;
                 bestCostAcum = subseq_matrix[0][n].C;
             } 
+           // cout << iterILS << endl;
 
+            //cout << " P " << endl;
             Perturbation(&best);
-
-            cout << " P ";
-
             UptadeAllSubseq(&best, subseq_matrix, data);
             iterILS++;
         }
+
+
         if(bestCostAcum < bestOfAllCost){
             bestOfAll = best;
             bestOfAllCost = bestCostAcum;
         }
 }
+    cout << "Custo antes de retornar: " << subseq_matrix[0][n].C << endl;
     return bestOfAll;
 
 }
@@ -532,15 +532,15 @@ int main(int argc, char** argv) {
             maxIterILS = n;
         }
     
-    
+
     for(int i = 0; i < 10; i++){
         vector<vector<Subsequence>> subseq_matrix(n + 1, vector<Subsequence>(n + 1)); 
         auto begin = chrono::high_resolution_clock::now();
 
-        cout << maxIter << " - " << maxIterILS << endl;
+        //cout << maxIter << " - " << maxIterILS << endl;
         best = ILS(maxIter, maxIterILS, data);
         UptadeAllSubseq(&best, subseq_matrix, data);
-        cout << "saindo" << endl;
+        //cout << "saindo" << endl;
 
         auto end = chrono::high_resolution_clock::now();
         auto time = chrono::duration_cast<chrono::milliseconds>(end - begin);
