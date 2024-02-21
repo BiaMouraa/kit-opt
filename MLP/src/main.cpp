@@ -497,8 +497,8 @@ Solution ILS(int maxIter, int maxIterILS, Data& data){
            // cout << iterILS << endl;
 
             //cout << " P " << endl;
-            Perturbation(&best);
-            UptadeAllSubseq(&best, subseq_matrix, data);
+            Perturbation(&s);
+            UptadeAllSubseq(&s, subseq_matrix, data);
             iterILS++;
         }
 
