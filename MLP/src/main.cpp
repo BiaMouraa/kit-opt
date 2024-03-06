@@ -390,13 +390,13 @@ void LocalSearch(Solution& s, vector<vector<Subsequence>>& subseq_matrix, Data& 
 
 }
 
-void Perturbation(Solution* s){
+Solution Perturbation(Solution s){
 
-    s->sequence.erase(s->sequence.begin());
-    s->sequence.erase(s->sequence.end() - 1);
+    s.sequence.erase(s.sequence.begin());
+    s.sequence.erase(s.sequence.end() - 1);
 
 
-    int n = s->sequence.size();
+    int n = s.sequence.size();
     int tMax = n/10;
 
     int seg1First, seg2First = -1, insertSeg1, insertSeg2;
@@ -410,7 +410,7 @@ void Perturbation(Solution* s){
     seg1First = rand() % (n - 1 - tSeg1);
 
      for(int i = 0; i < tSeg1; i++){
-        seg1.push_back(s->sequence[seg1First + i]); //set segment1
+        seg1.push_back(s.sequence[seg1First + i]); //set segment1
     }
     
 
@@ -420,7 +420,7 @@ void Perturbation(Solution* s){
         //check if seg1 and seg2 are overlapping
         for(int i = 0; i < seg1.size(); i++){ 
             for(int j = 0; j < tSeg2; j++){
-                if(s->sequence[seg2First + j] == seg1[i]){
+                if(s.sequence[seg2First + j] == seg1[i]){
                     seg2First = -1;
                     break;
                 } 
@@ -430,20 +430,20 @@ void Perturbation(Solution* s){
      }
 
     for(int i = 0; i < tSeg2; i++){
-        seg2.push_back(s->sequence[seg2First + i]); //set segment2  
+        seg2.push_back(s.sequence[seg2First + i]); //set segment2  
     }
 
 
     //switch seg2 elements
     for(int i = 0; i < seg2.size(); i++){
         if(seg2First < seg1First){ //seg2 before seg1
-            vector<int>::iterator index = find(s->sequence.begin(), s->sequence.end(), seg2[i]);
-            s->sequence.erase(index);
-            s->sequence.insert(s->sequence.begin()+seg1First-1, seg2[i]);
+            vector<int>::iterator index = find(s.sequence.begin(), s.sequence.end(), seg2[i]);
+            s.sequence.erase(index);
+            s.sequence.insert(s.sequence.begin()+seg1First-1, seg2[i]);
         }else{ //seg2 after seg1
-            vector<int>::iterator index = find(s->sequence.begin(), s->sequence.end(), seg2[tSeg2 - 1 - i]);
-            s->sequence.erase(index);
-            s->sequence.insert(s->sequence.begin()+seg1First, seg2[tSeg2 - 1 - i]);
+            vector<int>::iterator index = find(s.sequence.begin(), s.sequence.end(), seg2[tSeg2 - 1 - i]);
+            s.sequence.erase(index);
+            s.sequence.insert(s.sequence.begin()+seg1First, seg2[tSeg2 - 1 - i]);
         }
     }
     
@@ -451,31 +451,31 @@ void Perturbation(Solution* s){
     //switch seg1 elements
     for(int i = 0; i < seg1.size(); i++){
         if(seg2First < seg1First){ //seg2 before seg1
-            vector<int>::iterator index = find(s->sequence.begin(), s->sequence.end(), seg1[tSeg1 - 1 - i]);
-            s->sequence.erase(index);
-            s->sequence.insert(s->sequence.begin()+seg2First, seg1[tSeg1 - 1 - i]);
+            vector<int>::iterator index = find(s.sequence.begin(), s.sequence.end(), seg1[tSeg1 - 1 - i]);
+            s.sequence.erase(index);
+            s.sequence.insert(s.sequence.begin()+seg2First, seg1[tSeg1 - 1 - i]);
         } else{
-            vector<int>::iterator index = find(s->sequence.begin(), s->sequence.end(), seg1[i]);
-            s->sequence.erase(index);
-            s->sequence.insert(s->sequence.begin()+seg2First+1, seg1[i]);
+            vector<int>::iterator index = find(s.sequence.begin(), s.sequence.end(), seg1[i]);
+            s.sequence.erase(index);
+            s.sequence.insert(s.sequence.begin()+seg2First+1, seg1[i]);
         }
     }
 
-    s->sequence.insert(s->sequence.begin(), 1);
-    s->sequence.push_back(1);
+    s.sequence.insert(s.sequence.begin(), 1);
+    s.sequence.push_back(1);
+
+    return s;
     
 }
 
-Solution ILS(int maxIter, int maxIterILS, Data& data){
+Solution ILS(int maxIter, int maxIterILS, vector<vector<Subsequence>>& subseq_matrix, Data& data){
     Solution bestOfAll;
     bestOfAll.cost = INFINITY;
     double bestCostAcum;
     double bestOfAllCost;
     size_t n = data.getDimension();
-    vector<vector<Subsequence>> subseq_matrix(n + 1, vector<Subsequence>(n + 1));
  
     for(int i = 0; i < maxIter; i++){
-        //cout << " C " << endl;
         Solution s = Construction(data);
         UptadeAllSubseq(&s, subseq_matrix, data);
         Solution best = s;
@@ -483,8 +483,7 @@ Solution ILS(int maxIter, int maxIterILS, Data& data){
         
         
         int iterILS = 0;
-        while(iterILS <= 1){
-           // cout << " L " << endl;
+        while(iterILS <= maxIterILS){
             LocalSearch(s, subseq_matrix, data);
             UptadeAllSubseq(&s, subseq_matrix, data);
             calculateSolutionCost(&s, data);
@@ -494,10 +493,8 @@ Solution ILS(int maxIter, int maxIterILS, Data& data){
                 iterILS = 0;
                 bestCostAcum = subseq_matrix[0][n].C;
             } 
-           // cout << iterILS << endl;
 
-            //cout << " P " << endl;
-            Perturbation(&s);
+            s = Perturbation(best);
             UptadeAllSubseq(&s, subseq_matrix, data);
             iterILS++;
         }
@@ -508,7 +505,7 @@ Solution ILS(int maxIter, int maxIterILS, Data& data){
             bestOfAllCost = bestCostAcum;
         }
 }
-    cout << "Custo antes de retornar: " << subseq_matrix[0][n].C << endl;
+    cout << "Custo antes de retornar: " << subseq_matrix[0][n].C << " - " << bestCostAcum << endl;
     return bestOfAll;
 
 }
@@ -538,7 +535,7 @@ int main(int argc, char** argv) {
         auto begin = chrono::high_resolution_clock::now();
 
         //cout << maxIter << " - " << maxIterILS << endl;
-        best = ILS(maxIter, maxIterILS, data);
+        best = ILS(maxIter, maxIterILS, subseq_matrix, data);
         UptadeAllSubseq(&best, subseq_matrix, data);
         //cout << "saindo" << endl;
 
