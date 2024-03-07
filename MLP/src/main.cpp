@@ -472,7 +472,7 @@ Solution ILS(int maxIter, int maxIterILS, vector<vector<Subsequence>>& subseq_ma
     Solution bestOfAll;
     bestOfAll.cost = INFINITY;
     double bestCostAcum;
-    double bestOfAllCost;
+    double bestOfAllCost = INFINITY;
     size_t n = data.getDimension();
  
     for(int i = 0; i < maxIter; i++){
@@ -503,9 +503,10 @@ Solution ILS(int maxIter, int maxIterILS, vector<vector<Subsequence>>& subseq_ma
         if(bestCostAcum < bestOfAllCost){
             bestOfAll = best;
             bestOfAllCost = bestCostAcum;
+            //cout << "oi" << endl;
         }
 }
-    cout << "Custo antes de retornar: " << subseq_matrix[0][n].C << " - " << bestCostAcum << endl;
+    //cout << "Custo antes de retornar: " << subseq_matrix[0][n].C << " - " << bestOfAllCost << endl;
     return bestOfAll;
 
 }
