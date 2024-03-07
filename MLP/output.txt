@@ -1,0 +1,67 @@
+Média do custo e o tempo em segundos de 10 execuções do algoritmo em cada instância. Intel® Core™ i5-1035G1 CPU @ 1.00GHz × 8	
+
+dantzig42:
+Tempo: 0.4716   Custo: 12528
+
+swiss42:
+Tempo: 0.4615   Custo: 22327
+
+att48:
+Tempo: 0.764    Custo: 209320
+
+gr48:
+Tempo: 0.888    Custo: 102378
+
+hk48:
+Tempo: 0.8212   Custo: 247926
+
+eil51:
+Tempo: 1.2319   Custo:10181.8
+
+berlin52:
+Tempo: 1.1085   Custo: 143721
+
+brazil58:
+Tempo: 1.8604   Custo: 512526
+
+st70:
+Tempo: 3.3957   Custo: 20557
+
+eil76:
+Tempo: 4.8796   Custo: 18040.5
+
+pr76:
+Tempo: 4.8471   Custo: 3466070
+
+gr96:
+Tempo: 11.6472  Custo: 2097170
+
+rat99:
+Tempo: 14.8296  Custo: 58095.3
+
+kroA100:
+Tempo: 15.2433  Custo: 983924
+
+kroB100:
+Tempo: 15.1081  Custo: 986008
+
+kroC100:
+Tempo:16.4666   Custo: 961324
+
+kroD100:
+Tempo:15.5169   Custo: 977623
+
+kroE100:
+Tempo: 13.4812  Custo: 971266
+
+rd100:
+Tempo: 15.136   Custo: 340459
+
+eil101:
+Tempo: 17.1461  Custo: 27586
+
+lin105:
+Tempo: 16.4954   Custo: 607771
+
+pr107:
+Tempo: 20.492    Custo: 2026630
