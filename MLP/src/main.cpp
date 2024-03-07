@@ -136,16 +136,6 @@ Solution Construction(Data& data){
         CL.push_back(i);
         }
 
-    
-    // //choose 3 random from CL and increment in s
-    // for(int i = 0 ; i < 3; i++){
-    //     int pos = rand() % CL.size();
-    //     int value = CL[pos];
-    //     s.sequence.push_back(value);
-    //     CL.erase(CL.begin() + pos);
-    // }
-
-
 
     while(!CL.empty()){
         vector<InsertionInfo> insertionCost = calculateInsertionCost(r, CL, data);
@@ -503,10 +493,8 @@ Solution ILS(int maxIter, int maxIterILS, vector<vector<Subsequence>>& subseq_ma
         if(bestCostAcum < bestOfAllCost){
             bestOfAll = best;
             bestOfAllCost = bestCostAcum;
-            //cout << "oi" << endl;
         }
 }
-    //cout << "Custo antes de retornar: " << subseq_matrix[0][n].C << " - " << bestOfAllCost << endl;
     return bestOfAll;
 
 }
@@ -535,10 +523,8 @@ int main(int argc, char** argv) {
         vector<vector<Subsequence>> subseq_matrix(n + 1, vector<Subsequence>(n + 1)); 
         auto begin = chrono::high_resolution_clock::now();
 
-        //cout << maxIter << " - " << maxIterILS << endl;
         best = ILS(maxIter, maxIterILS, subseq_matrix, data);
         UptadeAllSubseq(&best, subseq_matrix, data);
-        //cout << "saindo" << endl;
 
         auto end = chrono::high_resolution_clock::now();
         auto time = chrono::duration_cast<chrono::milliseconds>(end - begin);
